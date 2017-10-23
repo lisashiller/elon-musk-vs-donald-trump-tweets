@@ -1,0 +1,40 @@
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.naive_bayes import MultinomialNB
+
+# read in train and test data and set it up
+train_df_raw = pd.read_csv('/Users/lisashiller/Documents/elon_musk_tweets/tweets_train.csv',sep = ',', header=None, low_memory = False,encoding="L5", names=['tweet', 'label'])
+test_df_raw = pd.read_csv('/Users/lisashiller/Documents/elon_musk_tweets/tweets_test.csv',sep = ',', header=None, low_memory = False,encoding="L5", names=['tweet', 'label'])
+
+train_df_raw =  train_df_raw[train_df_raw['tweet'].notnull()]
+test_df_raw =  test_df_raw[test_df_raw['tweet'].notnull()]
+# test_df_raw =  test_df_raw[test_df_raw['label']!=2]
+
+y_train = train_df_raw['label'].tolist()
+y_test = test_df_raw['label'].tolist()
+X_train = train_df_raw['tweet'].tolist()
+X_test = test_df_raw['tweet'].tolist()
+
+# Extracting features
+import numpy
+from sklearn.feature_extraction.text import CountVectorizer
+
+count_vectorizer = CountVectorizer()
+X_train = count_vectorizer.fit_transform(X_train)
+
+# Train model
+classifier = MultinomialNB()
+classifier.fit(X_train, y_train)
+
+# Use model to predict on test data to see the accuracy
+X_test = count_vectorizer.transform(X_test)
+predictions = classifier.predict(X_test)
+classifier.score(X_test, y_test)
+
+# Dump the model into a file to save it for later
+from sklearn.externals import joblib
+joblib.dump(classifier, '/Users/lisashiller/Documents/elon_musk_tweets/my_trained_data.pkl', compress=9)
+
+# Then to load it back in
+from sklearn.externals import joblib
+trained_data = joblib.load('/Users/lisashiller/Documents/elon_musk_tweets/my_trained_data.pkl')
